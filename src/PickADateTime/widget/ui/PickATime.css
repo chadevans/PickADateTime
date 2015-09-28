@@ -1,0 +1,7 @@
+.picker--time .picker__box {
+    position: relative;
+}
+.picker__list {
+    max-height: 25em;
+    overflow-y: auto;
+}

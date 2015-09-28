@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<widget id="PickADateTime.widget.PickATime" needsEntityContext="true" xmlns="http://www.mendix.com/widget/1.0/">
+  <name>PickATime</name>
+  <description>The description of this widget.</description>
+
+  <icon></icon>
+
+  <properties>
+        <property key="timeAttr" type="attribute">
+            <caption>DateTime Attribute</caption>
+            <category>Data Source</category>
+            <description>The time to modify.</description>
+            <attributeTypes>
+                <attributeType name="DateTime"/>
+            </attributeTypes>
+        </property>
+        <property key="targetClass" type="string" required="true" defaultValue="timepicker">
+            <caption>Target Class</caption>
+            <category>Behavior</category>
+            <description>The date time input device to target by class.</description>
+        </property>
+        <property key="mfToExecute" type="microflow" required="false" defaultValue="">
+            <caption>Microflow</caption>
+            <category>Behavior</category>
+            <description>The microflow to execute on click.</description>
+            <returnType type="Boolean"></returnType>
+        </property>
+	</properties>
+</widget>
+
