@@ -3,15 +3,15 @@
     ========================
 
     @file      : PickATime.js
-    @version   : 0.1
+    @version   : 0.2
     @author    : Chad Evans
-    @date      : Fri, 25 Sep 2015 15:31:47 GMT
+    @date      : 02 Oct 2015
     @copyright : 2015, Mendix B.v.
     @license   : Apache v2
 
     Documentation
     ========================
-    Describe your widget here.
+    A time picker for Mendix, based on PickADate http://amsul.ca/pickadate.js/time/.
 */
 
 // Required module list. Remove unnecessary modules, you can always get them back from the boilerplate.
@@ -30,13 +30,14 @@ define([
     "dojo/_base/lang",
     "dojo/text",
     "dojo/html",
+    "dojo/json",
     "dojo/_base/event",
     "PickADateTime/lib/jquery-1.11.2",
     "PickADateTime/lib/picker",
     "PickADateTime/lib/picker.time",
     "dojo/text!PickADateTime/widget/template/PickATime.html"
 ], function (declare, _WidgetBase, _TemplatedMixin, dom, dojoDom, dojoProp, dojoGeometry, dojoClass, dojoStyle,
-    dojoConstruct, dojoArray, dojoLang, dojoText, dojoHtml, dojoEvent,
+    dojoConstruct, dojoArray, dojoLang, dojoText, dojoHtml, dojoJson, dojoEvent,
     _jQuery, _picker, _pickerTime, widgetTemplate) {
     "use strict";
 
@@ -48,12 +49,20 @@ define([
         templateString: widgetTemplate,
 
         // DOM elements
+        timeInputLabel: null,
+        timeInputContainer: null,
         timeInputNode: null,
 
         // Parameters configured in the Modeler.
         timeAttr: "",
-        targetClass: "",
-        mfToExecute: "",
+        timeInterval: "",
+        displayFormat: "",
+        clearText: "",
+        showLabel: true,
+        labelCaption: "",
+        formOrientation: "horizontal",
+        labelWidth: 3,
+        extraOptions: "",
 
         // Internal variables. Non-primitives created in the prototype are shared between all widget instances.
         _handles: null,
@@ -106,8 +115,10 @@ define([
         // Attach events to HTML dom elements
         _setupEvents: function () {
             this._options = {
-                //container: "." + this.targetClass + " .mx-dateinput",
-                formatLabel: "<!a>h:i A</!a>",
+                format: this.displayFormat,
+                formatLabel: "<!a>" + this.displayFormat + "</!a>",
+                interval: this.timeInterval,
+                clear: this.clearText,
                 klass: {
                     opened: "picker--opened open",
 
@@ -122,6 +133,33 @@ define([
                 }
             };
 
+            if (this.extraOptions !== "") {
+                dojoLang.mixin(this._options, dojoJson.parse(this.extraOptions));
+            }
+
+            if (this.showLabel) {
+                if (this.formOrientation === "horizontal") {
+                    // width needs to be between 1 and 11
+                    var labelWidth = this.labelWidth < 1 ? 1 :
+                        this.labelWidth > 11 ? 11 : this.labelWidth;
+
+                    var labelClass = "col-sm-" + labelWidth,
+                        controlClass = "col-sm-" + (12 - labelWidth);
+
+                    dojoClass.add(this.timeInputLabel, labelClass);
+                    dojoClass.add(this.timeInputContainer, controlClass);
+                }
+
+                dojoHtml.set(this.timeInputLabel, this.labelCaption);
+            } else {
+                dojoConstruct.destroy(this.timeInputLabel);
+                dojoConstruct.place(this.timeInputNode, this.domNode);
+                dojoConstruct.destroy(this.timeInputContainer);
+                dojoClass.remove(this.domNode, "form-group");
+                this.timeInputLabel = null;
+                this.timeInputContainer = null;
+            }
+
             this.connect(this.timeInputNode, "change", function (e) {
                 // Function from mendix object to set an attribute.
                 this._contextObj.set(this.timeAttr, this.timeInputNode.value);
@@ -130,7 +168,7 @@ define([
 
         // Rerender the interface.
         _updateRendering: function () {
-            //this.timeInputNode.disabled = this.readOnly;
+            this.timeInputNode.disabled = this.readOnly;
 
             if (this._contextObj !== null) {
                 dojoStyle.set(this.domNode, "display", "block");
@@ -138,11 +176,11 @@ define([
                 if (this._picker) {
                     this._picker.off("set");
                     //this._picker.stop();
-                    
+
                 } else {
                     this._picker = $(this.timeInputNode).pickatime(this._options).pickatime("picker");
                 }
-                
+
                 var currTime = new Date(this._contextObj.get(this.timeAttr));
                 this._picker.set("select", currTime);
 
